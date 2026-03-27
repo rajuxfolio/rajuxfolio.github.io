@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicle Repair Shop Management &#8212; Raj Radhakrishnan</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0e0e0c; --ink-2: #3d3d38; --ink-3: #7a7a72;
+    --surface: #faf9f6; --surface-2: #f0efe9; --surface-3: #e5e3da;
+    --accent: #1a4a3a; --accent-light: #e8f0ec;
+    --line: rgba(14,14,12,0.1);
+    --font-sans: 'Geist', system-ui, sans-serif;
+    --max: 1100px;
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-sans); background: var(--surface); color: var(--ink); font-size: 16px; line-height: 1.7; -webkit-font-smoothing: antialiased; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 200; padding: 0 2.5rem; height: 62px; display: flex; align-items: center; justify-content: space-between; background: rgba(250,249,246,0.94); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+  .nav-back { display: flex; align-items: center; gap: 7px; font-size: 13px; color: var(--ink-3); text-decoration: none; transition: color 0.18s; }
+  .nav-back:hover { color: var(--ink); }
+  .nav-back:hover svg { transform: translateX(-3px); }
+  .nav-back svg { transition: transform 0.2s; }
+  .nav-right { display: flex; align-items: center; gap: 1.5rem; }
+  .nav-logo { font-size: 15px; font-weight: 600; color: var(--ink); text-decoration: none; letter-spacing: -0.03em; }
+  .nav-cta { font-size: 13px; font-weight: 500; color: var(--accent); text-decoration: none; border: 1px solid var(--accent); padding: 6px 16px; border-radius: 100px; transition: background 0.18s, color 0.18s; }
+  .nav-cta:hover { background: var(--accent); color: #fff; }
+
+  .progress-bar { position: fixed; top: 62px; left: 0; height: 2px; background: var(--accent); width: 0%; z-index: 199; transition: width 0.1s linear; pointer-events: none; }
+
+  .cs-hero { padding-top: 62px; background: var(--ink); color: var(--surface); }
+  .cs-hero-inner { max-width: var(--max); margin: 0 auto; padding: 64px 2.5rem 0; }
+  .cs-eyebrow { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(250,249,246,0.4); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 10px; }
+  .cs-eyebrow::before { content: ''; width: 22px; height: 1px; background: rgba(250,249,246,0.3); }
+  .cs-hero h1 { font-size: clamp(28px, 4vw, 52px); font-weight: 600; line-height: 1.05; letter-spacing: -0.04em; color: var(--surface); max-width: 820px; margin-bottom: 1.25rem; }
+  .cs-hero-sub { font-size: 16px; font-weight: 300; color: rgba(250,249,246,0.55); line-height: 1.7; max-width: 600px; margin-bottom: 2.5rem; }
+  .cs-meta-bar { display: flex; border-top: 1px solid rgba(250,249,246,0.1); flex-wrap: wrap; }
+  .cs-meta-item { flex: 1 1 20%; padding: 1.25rem 0; border-right: 1px solid rgba(250,249,246,0.1); min-width: 120px; }
+  .cs-meta-item:last-child { border-right: none; }
+  .cs-meta-label { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(250,249,246,0.35); margin-bottom: 0.35rem; }
+  .cs-meta-value { font-size: 13px; color: rgba(250,249,246,0.75); }
+
+  .cs-cover { width: 100%; aspect-ratio: 21/9; overflow: hidden; }
+  .cs-cover-placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #0e2218 0%, #1a3a2a 50%, #0a1a10 100%); position: relative; overflow: hidden; }
+  .cs-cover-placeholder svg { position: relative; z-index: 1; }
+
+  .cs-layout { max-width: var(--max); margin: 0 auto; padding: 0 2.5rem; display: grid; grid-template-columns: 180px 1fr; gap: 0 4rem; align-items: start; }
+
+  .cs-toc { position: sticky; top: 90px; padding: 3rem 0; border-right: 1px solid var(--line); padding-right: 2rem; }
+  .cs-toc-label { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 1rem; }
+  .cs-toc-list { list-style: none; display: flex; flex-direction: column; }
+  .cs-toc-item a { font-size: 13px; color: var(--ink-3); text-decoration: none; display: block; padding: 0.4rem 0 0.4rem 0.85rem; border-left: 2px solid transparent; transition: color 0.15s, border-color 0.15s; line-height: 1.4; }
+  .cs-toc-item a:hover { color: var(--ink); }
+  .cs-toc-item a.active { color: var(--accent); border-left-color: var(--accent); font-weight: 500; }
+
+  .cs-article { padding: 3rem 0 5rem; }
+  .cs-section { margin-bottom: 3.5rem; scroll-margin-top: 90px; }
+  .cs-section + .cs-section { padding-top: 3rem; border-top: 1px solid var(--line); }
+  .cs-section-label { font-size: 11px; font-weight: 500; letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 8px; }
+  .cs-section-label::before { content: ''; width: 18px; height: 1px; background: var(--accent); }
+  .cs-section h2 { font-size: 24px; font-weight: 600; letter-spacing: -0.03em; line-height: 1.2; margin-bottom: 1.1rem; }
+  .cs-section p { font-size: 15px; color: var(--ink-2); line-height: 1.85; margin-bottom: 1rem; max-width: 660px; }
+  .cs-section p:last-child { margin-bottom: 0; }
+
+  .cs-callout { background: var(--accent-light); border-left: 3px solid var(--accent); padding: 1.1rem 1.4rem; border-radius: 0 6px 6px 0; margin: 1.5rem 0; }
+  .cs-callout p { font-size: 15px; font-weight: 500; color: var(--accent); margin: 0; line-height: 1.6; max-width: none; }
+
+  .cs-quote { border-left: 3px solid var(--surface-3); padding: 0.4rem 1.4rem; margin: 1.5rem 0; }
+  .cs-quote p { font-size: 17px; font-weight: 300; color: var(--ink-2); font-style: italic; line-height: 1.65; margin: 0; max-width: none; }
+  .cs-quote cite { display: block; font-size: 12px; font-style: normal; color: var(--ink-3); margin-top: 0.5rem; }
+
+  .cs-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; background: var(--line); border: 1px solid var(--line); margin: 1.75rem 0; }
+  .cs-stat { background: var(--surface); padding: 1.4rem; text-align: center; }
+  .cs-stat-num { font-size: 34px; font-weight: 600; letter-spacing: -0.04em; color: var(--accent); line-height: 1; margin-bottom: 0.3rem; }
+  .cs-stat-label { font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+
+  .cs-steps { display: flex; flex-direction: column; margin: 1.5rem 0; }
+  .cs-step { display: grid; grid-template-columns: 32px 1fr; gap: 1rem; padding: 1.1rem 0; border-bottom: 1px solid var(--line); align-items: start; }
+  .cs-step:last-child { border-bottom: none; }
+  .cs-step-num { width: 26px; height: 26px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; color: var(--ink-3); flex-shrink: 0; margin-top: 2px; }
+  .cs-step h4 { font-size: 14px; font-weight: 500; margin-bottom: 0.25rem; }
+  .cs-step p { font-size: 13px; color: var(--ink-2); line-height: 1.65; margin: 0; max-width: none; }
+
+  .cs-before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 2px; background: var(--line); border: 1px solid var(--line); margin: 1.5rem 0; border-radius: 6px; overflow: hidden; }
+  .cs-ba-panel { background: var(--surface); padding: 1.1rem 1.4rem; }
+  .cs-ba-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-3); margin-bottom: 0.65rem; display: flex; align-items: center; gap: 6px; }
+  .cs-ba-label.before::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--surface-3); display: block; }
+  .cs-ba-label.after::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); display: block; }
+  .cs-ba-panel ul { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+  .cs-ba-panel li { font-size: 13px; color: var(--ink-2); display: flex; align-items: baseline; gap: 8px; }
+  .cs-ba-panel li::before { content: '&#8212;'; color: var(--ink-3); font-size: 11px; flex-shrink: 0; }
+
+  .cs-insights { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.5rem 0; }
+  .cs-insight { background: var(--surface-2); border-radius: 6px; padding: 1.25rem; }
+  .cs-insight-num { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.5rem; }
+  .cs-insight h4 { font-size: 14px; font-weight: 500; margin-bottom: 0.35rem; color: var(--ink); }
+  .cs-insight p { font-size: 13px; color: var(--ink-2); line-height: 1.65; margin: 0; max-width: none; }
+
+  .cs-tools { display: flex; flex-wrap: wrap; gap: 2px; background: var(--line); border: 1px solid var(--line); margin: 1.75rem 0; }
+  .cs-tool { background: var(--surface); padding: 1.1rem 1.4rem; flex: 1 1 150px; }
+  .cs-tool-name { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 0.2rem; }
+  .cs-tool-use { font-size: 12px; color: var(--ink-3); }
+
+  .cs-timeline { display: flex; flex-direction: column; gap: 0; margin: 1.75rem 0; border: 1px solid var(--line); overflow: hidden; border-radius: 6px; }
+  .cs-timeline-row { display: grid; grid-template-columns: 140px 1fr; gap: 0; background: var(--surface); border-bottom: 1px solid var(--line); }
+  .cs-timeline-row:last-child { border-bottom: none; }
+  .cs-timeline-phase { padding: 1rem 1.25rem; background: var(--surface-2); border-right: 1px solid var(--line); }
+  .cs-timeline-phase-label { font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent); margin-bottom: 0.2rem; }
+  .cs-timeline-phase-period { font-size: 12px; color: var(--ink-3); }
+  .cs-timeline-content { padding: 1rem 1.25rem; }
+  .cs-timeline-content h4 { font-size: 13px; font-weight: 500; color: var(--ink); margin-bottom: 0.2rem; }
+  .cs-timeline-content p { font-size: 13px; color: var(--ink-2); line-height: 1.6; margin: 0; }
+
+  .cs-image { margin: 1.75rem 0; border-radius: 6px; overflow: hidden; border: 1px solid var(--line); background: var(--surface-2); }
+  .cs-image img { width: 100%; display: block; }
+  .cs-image-placeholder { width: 100%; aspect-ratio: 16/9; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.6rem; }
+  .cs-image-caption { font-size: 12px; color: var(--ink-3); padding: 0.5rem 1rem; background: var(--surface); border-top: 1px solid var(--line); text-align: center; }
+  .cs-image-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin: 1.75rem 0; }
+  .cs-image-grid .cs-image { margin: 0; }
+
+  .cs-tag-pills { display: flex; flex-wrap: wrap; gap: 7px; margin: 1.25rem 0; }
+  .cs-tag-pill { font-size: 12px; color: var(--ink-2); background: var(--surface-2); border: 1px solid var(--line); padding: 5px 12px; border-radius: 100px; }
+
+  .cs-next-prev { border-top: 1px solid var(--line); }
+  .cs-next-prev-inner { max-width: var(--max); margin: 0 auto; padding: 2.5rem; display: grid; grid-template-columns: 1fr 1fr; gap: 2px; }
+  .cs-np-card { background: var(--surface); padding: 1.75rem; text-decoration: none; color: inherit; border: 1px solid var(--line); transition: background 0.2s; display: flex; flex-direction: column; gap: 0.35rem; }
+  .cs-np-card:hover { background: var(--surface-2); }
+  .cs-np-card.next { text-align: right; }
+  .cs-np-card.disabled { opacity: 0.35; pointer-events: none; }
+  .cs-np-dir { font-size: 11px; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-3); display: flex; align-items: center; gap: 5px; }
+  .cs-np-card.next .cs-np-dir { justify-content: flex-end; }
+  .cs-np-title { font-size: 15px; font-weight: 500; color: var(--ink); letter-spacing: -0.01em; line-height: 1.3; }
+
+  .footer { border-top: 1px solid var(--line); padding: 1.6rem 2.5rem; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--ink-3); }
+
+  @media (max-width: 860px) {
+    .cs-layout { grid-template-columns: 1fr; }
+    .cs-toc { display: none; }
+    .cs-stats { grid-template-columns: 1fr 1fr; }
+    .cs-insights { grid-template-columns: 1fr; }
+    .cs-image-grid { grid-template-columns: 1fr; }
+    .cs-before-after { grid-template-columns: 1fr; }
+    .cs-next-prev-inner { grid-template-columns: 1fr; }
+    .cs-meta-item { flex: 1 1 40%; }
+    .cs-tools { flex-direction: column; }
+    .cs-timeline-row { grid-template-columns: 1fr; }
+    .cs-timeline-phase { border-right: none; border-bottom: 1px solid var(--line); }
+  }
+  @media (max-width: 540px) {
+    .cs-stats { grid-template-columns: 1fr; }
+    nav { padding: 0 1.25rem; }
+  }
+
+  /* SCREENSHOT GALLERY */
+  .cs-gallery {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin: 1.75rem 0;
+  }
+  .cs-thumb {
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    cursor: zoom-in;
+    transition: transform 0.15s, box-shadow 0.15s;
+    background: var(--surface-2);
+    position: relative;
+  }
+  .cs-thumb:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+  .cs-thumb img { width: 100%; display: block; aspect-ratio: 16/10; object-fit: cover; }
+  .cs-thumb-label {
+    font-size: 11px;
+    color: var(--ink-3);
+    padding: 6px 8px;
+    background: var(--surface);
+    border-top: 1px solid var(--line);
+    line-height: 1.3;
+  }
+  .cs-thumb-zoom {
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 24px; height: 24px;
+    background: rgba(0,0,0,0.45);
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .cs-thumb:hover .cs-thumb-zoom { opacity: 1; }
+
+  /* MODAL */
+  .cs-modal-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,8,0.82);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+  .cs-modal-backdrop.open { display: flex; }
+  .cs-modal {
+    position: relative;
+    max-width: 1100px;
+    width: 100%;
+    max-height: 90vh;
+    background: var(--surface);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .cs-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .cs-modal-title { font-size: 13px; font-weight: 500; color: var(--ink); }
+  .cs-modal-close {
+    width: 32px; height: 32px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--ink-3);
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+  }
+  .cs-modal-close:hover { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .cs-modal-body { overflow: auto; flex: 1; }
+  .cs-modal-body img { width: 100%; display: block; }
+  .cs-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 1.25rem;
+    border-top: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .cs-modal-nav {
+    display: flex; gap: 6px;
+  }
+  .cs-modal-btn {
+    width: 32px; height: 32px;
+    background: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--ink-3);
+    transition: background 0.15s, color 0.15s;
+  }
+  .cs-modal-btn:hover { background: var(--ink); color: var(--surface); border-color: var(--ink); }
+  .cs-modal-btn:disabled { opacity: 0.3; pointer-events: none; }
+  .cs-modal-counter { font-size: 12px; color: var(--ink-3); }
+  .cs-modal-hint { font-size: 11px; color: var(--ink-3); }
+
+  @media (max-width: 860px) {
+    .cs-gallery { grid-template-columns: repeat(2, 1fr); }
+    .cs-modal-backdrop { padding: 1rem; }
+  }
+  @media (max-width: 480px) {
+    .cs-gallery { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progress"></div>
+
+<nav>
+  <a href="raj-radhakrishnan-portfolio.html" class="nav-back">
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+      <path d="M12 7H2M7 2L2 7l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    All work
+  </a>
+  <div class="nav-right">
+    <a href="raj-radhakrishnan-portfolio.html" class="nav-logo">Raj Radhakrishnan</a>
+    <a href="raj-radhakrishnan-portfolio.html" class="nav-cta">Contact</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="cs-hero">
+  <div class="cs-hero-inner">
+    <div class="cs-eyebrow">B2B Product &#183; UX Leadership</div>
+    <h1>Building a repair shop management platform from the ground up</h1>
+    <p class="cs-hero-sub">Leading a distributed UX team to design an end-to-end B2B product for independent vehicle repair shops &#8212; from foundational research through MVP and three major releases over two years.</p>
+    <div class="cs-meta-bar">
+      <div class="cs-meta-item">
+        <div class="cs-meta-label">My role</div>
+        <div class="cs-meta-value">UX Lead / Principal Designer</div>
+      </div>
+      <div class="cs-meta-item">
+        <div class="cs-meta-label">Timeline</div>
+        <div class="cs-meta-value">2.5 years (MVP + 4 releases)</div>
+      </div>
+      <div class="cs-meta-item">
+        <div class="cs-meta-label">Team</div>
+        <div class="cs-meta-value">Sr. Designers, UX Writers, UX Researchers</div>
+      </div>
+      <div class="cs-meta-item">
+        <div class="cs-meta-label">Platform</div>
+        <div class="cs-meta-value">B2B SaaS &#8212; Web</div>
+      </div>
+    </div>
+  </div>
+  <div class="cs-cover">
+    <img src="images/hero-image.png" alt="Vehicle repair shop floor" style="width:100%;height:100%;object-fit:cover;display:block;"/>
+  </div>
+</div>
+
+<!-- LAYOUT -->
+<div class="cs-layout">
+
+  <aside class="cs-toc">
+    <div class="cs-toc-label">Contents</div>
+    <ul class="cs-toc-list">
+      <li class="cs-toc-item"><a href="#overview">Overview</a></li>
+      <li class="cs-toc-item"><a href="#problem">The problem</a></li>
+      <li class="cs-toc-item"><a href="#research">Research</a></li>
+      <li class="cs-toc-item"><a href="#process">Process</a></li>
+      <li class="cs-toc-item"><a href="#solution">Solution</a></li>
+      <li class="cs-toc-item"><a href="#outcome">Outcome</a></li>
+      <li class="cs-toc-item"><a href="#learnings">Learnings</a></li>
+    </ul>
+  </aside>
+
+  <article class="cs-article">
+
+    <!-- 01 OVERVIEW -->
+    <div class="cs-section" id="overview">
+      <div class="cs-section-label">01 &#8212; Overview</div>
+      <h2>Context &amp; my role</h2>
+      <p>Independent vehicle repair shops are a fragmented, underserved market. Most are run by owner-operators juggling service bays, parts inventory, customer relationships, and invoicing &#8212; often across whiteboards, paper job cards, and disconnected spreadsheets. A purpose-built management platform for this segment didn&#8217;t exist in a form that felt native to how these businesses actually run.</p>
+      <p>I was brought in to lead the UX function for this product from day zero. My job covered the full design lifecycle: managing a distributed team of senior UX designers, UX writers, and UX researchers; establishing our design process and research infrastructure; and owning the design quality across every release from MVP through to year two.</p>
+      <p>The build played out in four phases &#8212; an MVP to validate core workflows, followed by a major release every six months that expanded the platform&#8217;s depth and breadth based on what we were learning from shops in production.</p>
+
+      <div class="cs-stats">
+        <div class="cs-stat">
+          <div class="cs-stat-num">MVP</div>
+          <div class="cs-stat-label">Zero to live in first phase</div>
+        </div>
+        <div class="cs-stat">
+          <div class="cs-stat-num">4</div>
+          <div class="cs-stat-label">Major releases over 2 years</div>
+        </div>
+        <div class="cs-stat">
+          <div class="cs-stat-num">3</div>
+          <div class="cs-stat-label">UX disciplines led (design, writing, research)</div>
+        </div>
+      </div>
+
+      <div class="cs-timeline">
+        <div class="cs-timeline-row">
+          <div class="cs-timeline-phase">
+            <div class="cs-timeline-phase-label">Phase 0</div>
+            <div class="cs-timeline-phase-period">Months 1&#8211;3</div>
+          </div>
+          <div class="cs-timeline-content">
+            <h4>Foundational research</h4>
+            <p>Immersive field research with shop owners and technicians. Established personas, journey maps, and the product&#8217;s core design principles.</p>
+          </div>
+        </div>
+        <div class="cs-timeline-row">
+          <div class="cs-timeline-phase">
+            <div class="cs-timeline-phase-label">MVP</div>
+            <div class="cs-timeline-phase-period">Months 4&#8211;9</div>
+          </div>
+          <div class="cs-timeline-content">
+            <h4>Core workflow design &amp; build</h4>
+            <p>Designed work order management, customer records, and basic invoicing. Iterated through prototype testing with a pilot cohort of shops.</p>
+          </div>
+        </div>
+        <div class="cs-timeline-row">
+          <div class="cs-timeline-phase">
+            <div class="cs-timeline-phase-label">Release 1</div>
+            <div class="cs-timeline-phase-period">Month 15</div>
+          </div>
+          <div class="cs-timeline-content">
+            <h4>Inventory &amp; parts management</h4>
+            <p>Added parts tracking, supplier integrations, and reorder workflows. First major post-launch feature expansion based on user feedback.</p>
+          </div>
+        </div>
+        </div>
+      </div>
+    
+
+    <!-- 02 PROBLEM -->
+    <div class="cs-section" id="problem">
+      <div class="cs-section-label">02 &#8212; Problem</div>
+      <h2>What we were solving</h2>
+      <p>The vehicle repair industry is dominated by small, independent shops &#8212; typically 2 to 10 employees. These businesses are run by people who are experts in engines and cars, not software. The tools they used before us ranged from pen-and-paper job cards to legacy desktop software built in the early 2000s that hadn&#8217;t been meaningfully updated since.</p>
+
+      <div class="cs-callout">
+        <p>Shop owners weren&#8217;t looking for powerful software. They were looking for something that didn&#8217;t get in the way of fixing cars. Time is money in these shops.</p>
+      </div>
+
+      <p>The core tension we had to resolve was between operational completeness (shops needed to manage everything &#8212; jobs, parts, customers, payments) and cognitive simplicity (the person using it might have grease on their hands and three customers waiting). And providing them with just in time insights without getting in their way is key. </p>
+
+      <div class="cs-before-after">
+        <div class="cs-ba-panel">
+          <div class="cs-ba-label before">Before our product</div>
+          <ul>
+            <li>Job cards written on paper, often lost or illegible</li>
+            <li>Customer history stored in the owner&#8217;s memory</li>
+            <li>Invoices created manually in Word or Excel</li>
+            <li>Parts ordering done over the phone with no tracking</li>
+            <li>No visibility into which bay was working on what</li>
+            <li>End-of-month reconciliation took days</li>
+          </ul>
+        </div>
+        <div class="cs-ba-panel">
+          <div class="cs-ba-label after">What we aimed to deliver</div>
+          <ul>
+            <li>Digital work orders created in under 30 seconds</li>
+            <li>Full vehicle and customer history at a glance</li>
+            <li>One-tap invoice generation from a completed job</li>
+            <li>Parts linked directly to work orders and using AI to smartly map the right part for the job</li>
+            <li>Real-time bay and technician status</li>
+            <li>Automated scheduling which solves huge pain points for the shop owners</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 RESEARCH -->
+    <div class="cs-section" id="research">
+      <div class="cs-section-label">03 &#8212; Research</div>
+      <h2>Getting inside the shop</h2>
+      <p>Before a single wireframe was drawn, we spent the first three months entirely in research mode. I worked alongside our UX researchers to conduct foundational research with shop owners, service advisors, and technicians across different shop sizes and specialisations.</p>
+      <p>We weren&#8217;t just mapping workflows &#8212; we were trying to understand the mental models, the unwritten rules, the moments of friction that people had stopped noticing because they&#8217;d worked around them for so long.</p>
+
+      <div class="cs-insights">
+        <div class="cs-insight">
+          <div class="cs-insight-num">Finding 01</div>
+          <h4>The front desk is the most stressful place in the shop</h4>
+          <p>Service advisors were managing customer expectations, tracking job progress, and handling phone calls simultaneously. Any tool they used needed to work in short, interruptible bursts &#8212; not long focused sessions.</p>
+        </div>
+        <div class="cs-insight">
+          <div class="cs-insight-num">Finding 02</div>
+          <h4>Owners don&#8217;t think in &#8220;features&#8221; &#8212; they think in jobs to be done</h4>
+          <p>When we asked about software needs, owners listed tasks: &#8220;I need to know what&#8217;s happening in my bays right now.&#8221; &#8220;I need to stop chasing people for payment.&#8221; Feature laundry lists from competitors meant nothing to them.</p>
+        </div>
+        <div class="cs-insight">
+          <div class="cs-insight-num">Finding 03</div>
+          <h4>Trust is the real adoption barrier</h4>
+          <p>Many owners had tried software before and given up. The biggest fear wasn&#8217;t learning something new &#8212; it was losing data or not being able to find things quickly during a busy day. Reliability and speed trumped richness of features.</p>
+        </div>
+        <div class="cs-insight">
+          <div class="cs-insight-num">Finding 04</div>
+          <h4>Parts and labour are inseparable in the shop&#8217;s mental model</h4>
+          <p>Every existing tool treated parts inventory and job management as separate modules. In reality, shops think about them as a single unit: a job isn&#8217;t complete until the parts are accounted for and the labour is priced. Our architecture had to reflect this.</p>
+        </div>
+      </div>
+
+      <div class="cs-quote">
+        <p>&#8220;I tried three different systems. They all had too many screens. I&#8217;d rather write it on paper than click through five pages to log a brake job.&#8221;</p>
+        <cite>&#8212; Shop owner, 12-bay independent workshop, foundational research session</cite>
+      </div>
+
+      <p>These sessions directly shaped our design principles &#8212; particularly our commitment to keeping core task flows to three steps or fewer, and designing the product to be fully functional on a tablet mounted at the service desk.</p>
+    </div>
+
+    <!-- 04 PROCESS -->
+    <div class="cs-section" id="process">
+      <div class="cs-section-label">04 &#8212; Process</div>
+      <h2>How we designed it</h2>
+      <p>Running a remote UX team across time zones required a deliberate process &#8212; one that gave designers enough autonomy to do deep work while keeping the team aligned and the research loop tight. I established a rhythm of weekly design critiques, biweekly research synthesis sessions, and monthly principal reviews that I ran directly with engineering and product leadership.</p>
+
+      <div class="cs-steps">
+        <div class="cs-step">
+          <div class="cs-step-num">1</div>
+          <div>
+            <h4>Concepts in Miro before wireframes in Figma</h4>
+            <p>Every major feature started as a collaborative whiteboard in Miro &#8212; service blueprints, user flows, edge case mapping. This kept the team aligned on the problem before anyone started producing UI. It also made it easy to involve engineers and PMs in shaping the approach before designs were too far along to change.</p>
+          </div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-step-num">2</div>
+          <div>
+            <h4>Rapid interactive prototypes with V0 and Figma Make</h4>
+            <p>We used V0 to generate quick functional UI scaffolding for concepts we wanted to test with real interactions &#8212; not just static screens. Figma Make let us turn high-fidelity designs into click-through prototypes with realistic data. This combination let us put something in front of shop owners within days of starting a new workflow, rather than weeks.</p>
+          </div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-step-num">3</div>
+          <div>
+            <h4>Deployed prototypes on Vercel for in-shop testing</h4>
+            <p>For key workflow tests, we deployed working prototypes via Vercel so shop owners could use them on their own devices in their own environment &#8212; not in a sterile lab session. The difference in quality of feedback was dramatic. People found problems we&#8217;d never have caught in a moderated session.</p>
+          </div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-step-num">4</div>
+          <div>
+            <h4>UX writers embedded from day one</h4>
+            <p>In repair shop software, the words matter as much as the layout. Technical jargon, confirmation messages, error states &#8212; everything had to feel like it was written by someone who understood the trade. Our UX writers were in Figma alongside designers from the first wireframe, not brought in at the end to &#8220;polish copy&#8221;.</p>
+          </div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-step-num">5</div>
+          <div>
+            <h4>Continuous research with a standing panel of shop owners</h4>
+            <p>We built a panel of 30+ shops at different stages of adoption &#8212; prospects, new users, and power users &#8212; who we could reach within 48 hours for quick feedback. This made every release feel like an ongoing conversation rather than a one-way push.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="cs-image">
+       <!-- <div class="cs-image-placeholder">
+          <svg width="40" height="40" viewBox="0 0 48 48" fill="none"><rect x="4" y="8" width="40" height="32" rx="4" stroke="#c8c6bc" stroke-width="1.5"/><circle cx="16" cy="20" r="4" stroke="#c8c6bc" stroke-width="1.5"/><path d="M4 32l10-8 8 6 8-5 14 7" stroke="#c8c6bc" stroke-width="1.5" stroke-linejoin="round"/></svg>
+          <span style="font-size:12px;color:var(--ink-3);">Add workshop photos, Miro board screenshots, or prototype previews here</span>
+        </div>
+        <div class="cs-image-caption">Service blueprint for the work order creation flow &#8212; mapped across shop roles</div>
+      </div> -->
+
+      <p>Our toolchain reflected the principle that the right tool for each job accelerates the work &#8212; rather than a single tool doing everything poorly.</p>
+
+      <div class="cs-tools">
+        <div class="cs-tool">
+          <div class="cs-tool-name">Miro</div>
+          <div class="cs-tool-use">Service blueprints, flows, research synthesis</div>
+        </div>
+        <div class="cs-tool">
+          <div class="cs-tool-name">Figma</div>
+          <div class="cs-tool-use">High-fidelity UI, design system, handoff</div>
+        </div>
+        <div class="cs-tool">
+          <div class="cs-tool-name">Figma Make</div>
+          <div class="cs-tool-use">Interactive prototypes from live designs</div>
+        </div>
+        <div class="cs-tool">
+          <div class="cs-tool-name">V0</div>
+          <div class="cs-tool-use">Rapid functional UI scaffolding for concept testing</div>
+        </div>
+        <div class="cs-tool">
+          <div class="cs-tool-name">Vercel</div>
+          <div class="cs-tool-use">Live prototype deployment for in-shop user testing</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 SOLUTION -->
+    <div class="cs-section" id="solution">
+      <div class="cs-section-label">05 &#8212; Solution</div>
+      <h2>What we shipped</h2>
+      <p>The platform launched with four core modules designed around the daily rhythm of a busy repair shop: work order management, customer and vehicle records, parts-linked job costing, and a live bay status view. Each module was designed to be fast to access and fast to complete &#8212; optimised for a service advisor who might have 90 seconds between customer interactions.</p>
+
+      <div class="cs-gallery">
+        <div class="cs-thumb" onclick="openModal(0)">
+          <img src="images/screen-dashboard.png" alt="Dashboard overview"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Dashboard overview</div>
+        </div>
+        <div class="cs-thumb" onclick="openModal(1)">
+          <img src="images/screen-work-orders.png" alt="Work orders"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Work orders</div>
+        </div>
+        <div class="cs-thumb" onclick="openModal(2)">
+          <img src="images/screen-invoices.png" alt="Invoices"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Invoices &amp; billing</div>
+        </div>
+        <div class="cs-thumb" onclick="openModal(3)">
+          <img src="images/screen-technicians.png" alt="Technicians"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Technician management</div>
+        </div>
+        <div class="cs-thumb" onclick="openModal(4)">
+          <img src="images/screen-add-customer.png" alt="Add customer"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Add customer</div>
+        </div>
+        <div class="cs-thumb" onclick="openModal(5)">
+          <img src="images/screen-add-vehicle.png" alt="Add vehicle"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Add vehicle</div>
+        </div>
+        <div class="cs-thumb" onclick="openModal(6)">
+          <img src="images/screen-invoices-2.png" alt="Invoice detail"/>
+          <div class="cs-thumb-zoom"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M7.5 1.5h3v3M4.5 10.5h-3v-3M10.5 1.5l-4 4M1.5 10.5l4-4" stroke="white" stroke-width="1.4" stroke-linecap="round"/></svg></div>
+          <div class="cs-thumb-label">Invoice detail view</div>
+        </div>
+      </div>
+
+      <p>The most consequential design decision across the whole product was treating the work order as the central object &#8212; everything else (customer, vehicle, parts, invoice) attached to it rather than existing in separate silos. This matched how shop owners actually thought about their day: not in terms of customers or vehicles, but in terms of jobs to complete.</p>
+
+      <div class="cs-tag-pills">
+        <span class="cs-tag-pill">Work order management</span>
+        <span class="cs-tag-pill">Customer &amp; vehicle records</span>
+        <span class="cs-tag-pill">Parts-linked job costing</span>
+        <span class="cs-tag-pill">Bay &amp; technician scheduling</span>
+        <span class="cs-tag-pill">Inventory management</span>
+        <span class="cs-tag-pill">Automated service reminders</span>
+        <span class="cs-tag-pill">Business reporting</span>
+        <span class="cs-tag-pill">Tablet-optimised UI</span>
+      </div>
+    </div>
+
+    <!-- 06 OUTCOME -->
+    <div class="cs-section" id="outcome">
+      <div class="cs-section-label">06 &#8212; Outcome</div>
+      <h2>Results &amp; impact</h2>
+      <p>Adoption data and qualitative feedback consistently pointed to the same themes: the product felt like it was designed by someone who understood repair shops, not by a software company that had watched a few YouTube videos about the industry. That distinction &#8212; earned through months of real research &#8212; became our sharpest competitive differentiator.</p>
+
+      <div class="cs-stats">
+        <div class="cs-stat">
+          <div class="cs-stat-num">&lt;3</div>
+          <div class="cs-stat-label">Average steps to complete core tasks at launch</div>
+        </div>
+        <div class="cs-stat">
+          <div class="cs-stat-num">4</div>
+          <div class="cs-stat-label">Major releases shipped on schedule over 2 years</div>
+        </div>
+        <div class="cs-stat">
+          <div class="cs-stat-num">0</div>
+          <div class="cs-stat-label">Critical usability regressions across all releases</div>
+        </div>
+      </div>
+
+      <div class="cs-quote">
+        <p>&#8220;This is the first software I&#8217;ve used that actually feels like it was made for a shop. My guys picked it up in a day.&#8221;</p>
+        <cite>&#8212; Shop owner, post-launch feedback session</cite>
+      </div>
+
+      <p>Beyond the product metrics, the way we worked &#8212; the standing research panel, the deployed prototypes, the embedded writers &#8212; became the operating model that the broader product team adopted for subsequent features. The UX process outlasted any individual feature we shipped.</p>
+    </div>
+
+    <!-- 07 LEARNINGS -->
+    <div class="cs-section" id="learnings">
+      <div class="cs-section-label">07 &#8212; Learnings</div>
+      <h2>What I&#8217;d do differently</h2>
+      <p>Two and a half years on a product from zero gives you a clear view of where the leverage was &#8212; and where time was wasted. Three things stand out.</p>
+
+      <div class="cs-steps">
+        <div class="cs-step">
+          <div class="cs-step-num">&#8599;</div>
+          <div>
+            <h4>Start the design system earlier</h4>
+            <p>We built a lot of one-off components in the MVP that we had to rationalise later. Starting with even a minimal token system &#8212; colour, spacing, typography &#8212; in month one would have saved significant rework by release two and made onboarding new designers to the team much faster.</p>
+          </div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-step-num">&#8599;</div>
+          <div>
+            <h4>Invest in async research documentation sooner</h4>
+            <p>The insights from foundational research lived in Miro boards and Notion pages that were well-structured but hard to surface in a fast-moving sprint. We should have built a &#8220;living&#8221; insight repository from the start &#8212; something every designer could query before starting a new feature rather than rediscovering things we&#8217;d already learned.</p>
+          </div>
+        </div>
+        <div class="cs-step">
+          <div class="cs-step-num">&#8599;</div>
+          <div>
+            <h4>Remote team rituals need more intentional design than in-person ones</h4>
+            <p>Early on, our critique sessions were too freeform. When you can&#8217;t read the room, unstructured feedback sessions become dominated by the loudest voices. Moving to a structured critique format &#8212; written observations before verbal discussion, explicit separation of &#8220;what I notice&#8221; from &#8220;what I&#8217;d change&#8221; &#8212; dramatically improved the quality of feedback and made quieter team members more effective contributors.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </article>
+</div>
+
+<!-- PREV / NEXT -->
+<div class="cs-next-prev">
+  <div class="cs-next-prev-inner">
+    <a href="case-study-design-system.html" class="cs-np-card">
+      <div class="cs-np-dir">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M10 6H2M5.5 2L1.5 6l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Previous
+      </div>
+      <div class="cs-np-title">Unifying a fragmented enterprise platform across 6 product lines</div>
+    </a>
+    <div class="cs-np-card next disabled">
+      <div class="cs-np-dir">
+        Next
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6h8M6.5 2l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div class="cs-np-title">More case studies coming soon</div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <span>&#169; 2026 Raj Radhakrishnan</span>
+  <span>Principal UX Designer &#8212; Enterprise &amp; B2B</span>
+</footer>
+
+<script>
+window.addEventListener('scroll', function() {
+  var el = document.documentElement;
+  var scrolled = el.scrollTop || document.body.scrollTop;
+  var total = el.scrollHeight - el.clientHeight;
+  document.getElementById('progress').style.width = (total > 0 ? (scrolled / total) * 100 : 0) + '%';
+});
+var sections = document.querySelectorAll('.cs-section[id]');
+var links = document.querySelectorAll('.cs-toc-item a');
+function updateToc() {
+  var y = window.scrollY + 130;
+  var cur = '';
+  sections.forEach(function(s) { if (s.offsetTop <= y) cur = s.id; });
+  links.forEach(function(a) { a.classList.toggle('active', a.getAttribute('href') === '#' + cur); });
+}
+window.addEventListener('scroll', updateToc);
+updateToc();
+
+// LIGHTBOX
+var GALLERY = [
+  { src: 'screen-dashboard.png',    label: 'Dashboard overview' },
+  { src: 'screen-work-orders.png',  label: 'Work orders' },
+  { src: 'screen-invoices.png',     label: 'Invoices & billing' },
+  { src: 'screen-technicians.png',  label: 'Technician management' },
+  { src: 'screen-add-customer.png', label: 'Add customer' },
+  { src: 'screen-add-vehicle.png',  label: 'Add vehicle' },
+  { src: 'screen-invoices-2.png',   label: 'Invoice detail view' }
+];
+var currentIdx = 0;
+
+function openModal(idx) {
+  currentIdx = idx;
+  updateModal();
+  document.getElementById('cs-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  document.getElementById('cs-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function handleBackdropClick(e) {
+  if (e.target === document.getElementById('cs-modal')) closeModal();
+}
+
+function navigateModal(dir) {
+  currentIdx = (currentIdx + dir + GALLERY.length) % GALLERY.length;
+  updateModal();
+}
+
+function updateModal() {
+  var item = GALLERY[currentIdx];
+  document.getElementById('modal-img').src = item.src;
+  document.getElementById('modal-img').alt = item.label;
+  document.getElementById('modal-title').textContent = item.label;
+  document.getElementById('modal-counter').textContent = (currentIdx + 1) + ' / ' + GALLERY.length;
+  document.getElementById('btn-prev').disabled = currentIdx === 0;
+  document.getElementById('btn-next').disabled = currentIdx === GALLERY.length - 1;
+}
+
+document.addEventListener('keydown', function(e) {
+  var modal = document.getElementById('cs-modal');
+  if (!modal.classList.contains('open')) return;
+  if (e.key === 'Escape') closeModal();
+  if (e.key === 'ArrowLeft'  && currentIdx > 0)                  navigateModal(-1);
+  if (e.key === 'ArrowRight' && currentIdx < GALLERY.length - 1) navigateModal(1);
+});
+
+</script>
+
+<!-- LIGHTBOX MODAL -->
+<div class="cs-modal-backdrop" id="cs-modal" onclick="handleBackdropClick(event)">
+  <div class="cs-modal">
+    <div class="cs-modal-header">
+      <span class="cs-modal-title" id="modal-title"></span>
+      <button class="cs-modal-close" onclick="closeModal()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="cs-modal-body">
+      <img id="modal-img" src="" alt=""/>
+    </div>
+    <div class="cs-modal-footer">
+      <div class="cs-modal-nav">
+        <button class="cs-modal-btn" id="btn-prev" onclick="navigateModal(-1)" aria-label="Previous">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9 2L4 7l5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+        <button class="cs-modal-btn" id="btn-next" onclick="navigateModal(1)" aria-label="Next">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 2l5 5-5 5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </button>
+      </div>
+      <span class="cs-modal-counter" id="modal-counter"></span>
+      <span class="cs-modal-hint">Esc or click outside to close</span>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
